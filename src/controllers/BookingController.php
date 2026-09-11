@@ -71,21 +71,21 @@ class BookingController{
                 'message' => 'Unauthorized'
             ];
         }
-        $repository = new BookingRepository($this->conn);
-
-        $canceled = $repository->delete( $booking_id, $id );
-
-        if (!$canceled) {
+        try{
+            $repository = new BookingRepository($this->conn);
+            $canceled = $repository->delete( $booking_id, $id );
             return [
+                "status" => 200,
+                'success' => true,
+                'message' => 'Booking canceled successfully'
+            ];
+        } catch (BookingException $e) {
+            return [
+                "status" => 400,
                 'success' => false,
-                'message' => 'Booking not found or you do not own this booking'
+                'message' => $e->getMessage()
             ];
         }
-
-        return [
-            'success' => true,
-            'message' => 'Booking canceled successfully'
-        ];
     }
 
     public function setStatus($bookingId){
