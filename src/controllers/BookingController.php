@@ -5,6 +5,7 @@ use App\repositories\BookingRepository;
 use App\entities\Appointment;
 use App\entities\Consultation;
 use App\entities\enums\BookingStatus;
+use App\exception\BookingException;
 use App\services\ConflictService;
 use App\services\ScheduleService;
 use App\Traits\HasAuthorization;
@@ -105,18 +106,21 @@ class BookingController{
                 'message' => 'Invalid status'
             ];
         }
-        $repo= new BookingRepository($this->conn);
-        if($repo->update($bookingId, $status)){
+        try{
+            $repo= new BookingRepository($this->conn);
+            if($repo->update($bookingId, $status))
+                return [
+                    "status" => 200,
+                    'success' => true,
+                    'message' => 'Booking status updated successfully'
+                ];      
+        }catch(BookingException $e){
             return [
-                'success' => true,
-                'message' => 'Booking status updated successfully'
-            ];
-        }else{
-            return [
+                "status" => 400,
                 'success' => false,
-                'message' => 'Booking not found or status is not pending'
+                'message' => $e->getMessage()
             ];
-        }  
+        }
     }
 
     public function getApprovedBookings(){
