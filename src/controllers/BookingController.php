@@ -43,6 +43,28 @@ class BookingController{
             'id' => $id
         ];
 
- 
+
+        
+    }
+
+    public function cancel(int $booking_id)   {
+        //اختبار الصلاحية
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $repository = new BookingRepository($this->conn);
+
+        $canceled = $repository->delete( $booking_id, $data['user_id'] );
+
+        if (!$canceled) {
+            return [
+                'success' => false,
+                'message' => 'Booking not found or you do not own this booking'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Booking canceled successfully'
+        ];
     }
 }

@@ -15,4 +15,17 @@ class BookingRepository{
         $stmt->execute();
         return $this->conn->insert_id;
     }
+
+    public function delete(int $bookingId, int $userId): bool{
+            $stmt = $this->conn->prepare("DELETE FROM bookings
+                                            WHERE id = ?
+                                            AND user_id = ?
+                                            AND status = 'pending'" );
+
+        $stmt->bind_param("ii", $bookingId, $userId);
+
+        $stmt->execute();
+
+        return $stmt->affected_rows > 0;
+    }
 }
