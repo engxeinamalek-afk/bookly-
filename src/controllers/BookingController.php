@@ -137,4 +137,22 @@ class BookingController{
             'bookings' => array_values($bookings)
         ];
     }
+    public function getRejectedBookings(){
+        $id=$this->user()['id'];
+        if(!$this->user() || !$this->role($id , 'client')){
+            return [
+                'success' => false,
+                'message' => 'Unauthorized'
+            ];
+        }
+        $repo= new BookingRepository($this->conn);
+        $bookings = $repo->getBookingsByUserId($id);
+        $bookings = array_filter($bookings, function($booking) {
+            return $booking['status'] === BookingStatus::CANCELLED->value;
+        });
+        return [
+            'success' => true,
+            'bookings' => array_values($bookings)
+        ];
+    }
 }
