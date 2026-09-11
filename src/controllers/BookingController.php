@@ -5,6 +5,8 @@ use App\repositories\BookingRepository;
 use App\entities\Appointment;
 use App\entities\Consultation;
 use App\entities\enums\BookingStatus;
+use App\services\ConflictService;
+use App\services\ScheduleService;
 use App\Traits\HasAuthorization;
 class BookingController{
     use HasAuthorization;
@@ -41,14 +43,22 @@ class BookingController{
         $booking->status = BookingStatus::PENDING;
         $booking->type = $data['type'];
         //هون لازم حط الاختبار اذا ممكن الحجز isAvailable?
-        $repository = new BookingRepository($this->conn);
+        if(ConflictService::isAvailable($this->conn, $data['date'], $data['start_time'], $end_time)
+            && ScheduleService::isAvailable($this->conn, $data['start_time'], $end_time, $data['date'])){
+            $repository = new BookingRepository($this->conn);
 
-        $id = $repository->create($booking);
+            $id = $repository->create($booking);
 
-        return [
-            'success' => true,
-            'id' => $id
-        ];
+            return [
+                'success' => true,
+                'id' => $id
+            ];
+        }else{
+            return [
+                'success' => false,
+                'message' => 'The selected time slot is not available'
+            ];
+        }
  
     }
 
