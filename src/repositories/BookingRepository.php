@@ -9,9 +9,10 @@ class BookingRepository{
     }
 
     public function create($booking){
-        $stmt= $this->conn->prepare("INSERT INTO bookings (user_id, start_time, end_time, date, status)
-                                     VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("issss", $booking->user_id ,$booking->start_time ,$booking->end_time ,$booking->date ,$booking->status);
+        $stmt= $this->conn->prepare("INSERT INTO bookings (user_id, start_time, end_time, date, status, type)
+                                     VALUES (?, ?, ?, ?, ?, ?)");
+        $status = $booking->status->value;
+        $stmt->bind_param("isssss", $booking->user_id ,$booking->start_time ,$booking->end_time ,$booking->date ,$status, $booking->type);
         $stmt->execute();
         return $this->conn->insert_id;
     }
@@ -37,5 +38,13 @@ class BookingRepository{
         $stmt->bind_param("si", $status, $bookingId);
         $stmt->execute();
         return $stmt->affected_rows > 0;
+    }
+
+    public function getBookingsByUserId($userId){
+        $stmt = $this->conn->prepare("SELECT date, start_time, end_time, type, status FROM bookings WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);// التحويل الى مصفوفة عناصرها مصفوفات كل key فيها هو اسم عمود
     }
 }

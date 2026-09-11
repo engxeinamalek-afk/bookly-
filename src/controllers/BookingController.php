@@ -41,7 +41,7 @@ class BookingController{
         $booking->start_time = $data['start_time'];
         $booking->end_time = $end_time;
         $booking->status = BookingStatus::PENDING;
-        $booking->type = $data['type'];
+        $booking->type = $booking->getType();
         //هون لازم حط الاختبار اذا ممكن الحجز isAvailable?
         if(ConflictService::isAvailable($this->conn, $data['date'], $data['start_time'], $end_time)
             && ScheduleService::isAvailable($this->conn, $data['start_time'], $end_time, $data['date'])){
@@ -117,8 +117,24 @@ class BookingController{
                 'message' => 'Booking not found or status is not pending'
             ];
         }  
+    }
 
-
-
+    public function getApprovedBookings(){
+        $id=$this->user()['id'];
+        if(!$this->user() || !$this->role($id , 'client')){
+            return [
+                'success' => false,
+                'message' => 'Unauthorized'
+            ];
+        }
+        $repo= new BookingRepository($this->conn);
+        $bookings = $repo->getBookingsByUserId($id);
+        $bookings = array_filter($bookings, function($booking) {
+            return $booking['status'] === BookingStatus::CONFIRMED->value;
+        });
+        return [
+            'success' => true,
+            'bookings' => array_values($bookings)
+        ];
     }
 }
