@@ -83,10 +83,14 @@ class BookingRepository{
     }
 
     public function getBookingsByUserId($userId){
-        $stmt = $this->conn->prepare("SELECT date, start_time, end_time, type, status FROM bookings WHERE user_id = ?");
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);// التحويل الى مصفوفة عناصرها مصفوفات كل key فيها هو اسم عمود
+        try{
+            $stmt = $this->conn->prepare("SELECT date, start_time, end_time, type, status FROM bookings WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            return $result->fetch_all(MYSQLI_ASSOC);// التحويل الى مصفوفة عناصرها مصفوفات كل key فيها هو اسم عمود   
+        } catch (\mysqli_sql_exception $e) {
+            throw BookingException::databaseError();
+        }
     }
 }

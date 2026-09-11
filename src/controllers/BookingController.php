@@ -131,15 +131,29 @@ class BookingController{
                 'message' => 'Unauthorized'
             ];
         }
-        $repo= new BookingRepository($this->conn);
-        $bookings = $repo->getBookingsByUserId($id);
-        $bookings = array_filter($bookings, function($booking) {
-            return $booking['status'] === BookingStatus::CONFIRMED->value;
-        });
-        return [
-            'success' => true,
-            'bookings' => array_values($bookings)
-        ];
+        try{
+            $repo= new BookingRepository($this->conn);
+            $bookings = $repo->getBookingsByUserId($id);
+            $bookings = array_filter($bookings, function($booking) {
+                return $booking['status'] === BookingStatus::CONFIRMED->value;
+            });
+            if(empty($bookings)){
+                return [
+                    'success' => true,
+                    'message' => "There is no approved bookings for this user",
+                ];
+            }
+            return [
+                'success' => true,
+                'bookings' => array_values($bookings)
+            ];
+        }catch(BookingException $e){
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
     public function getRejectedBookings(){
         $id=$this->user()['id'];
@@ -149,14 +163,28 @@ class BookingController{
                 'message' => 'Unauthorized'
             ];
         }
-        $repo= new BookingRepository($this->conn);
-        $bookings = $repo->getBookingsByUserId($id);
-        $bookings = array_filter($bookings, function($booking) {
-            return $booking['status'] === BookingStatus::CANCELLED->value;
-        });
-        return [
-            'success' => true,
-            'bookings' => array_values($bookings)
-        ];
+        try{
+            $repo= new BookingRepository($this->conn);
+            $bookings = $repo->getBookingsByUserId($id);
+            $bookings = array_filter($bookings, function($booking) {
+                return $booking['status'] === BookingStatus::CANCELLED->value;
+            });
+            if(empty($bookings)){
+                return [
+                    'success' => true,
+                    'message' => "There is no rejected bookings for this user",
+                ];
+            }
+            return [
+                'success' => true,
+                'bookings' => array_values($bookings)
+            ];
+        }catch(BookingException $e){
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 }
