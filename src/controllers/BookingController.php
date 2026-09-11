@@ -5,17 +5,24 @@ use App\repositories\BookingRepository;
 use App\entities\Appointment;
 use App\entities\Consultation;
 use App\entities\enums\BookingStatus;
+use App\Traits\HasAuthorization;
 class BookingController{
+    use HasAuthorization;
     private mysqli $conn;
     public function __construct(mysqli $conn){
         $this->conn=$conn;
     }
     public function book(){
-        //هون لازم اعمل اختبار للصلاحية
+        $id=$this->user()['id'];
+        if(!$this->user() || !$this->role($id , 'client')){
+            return [
+                'success' => false,
+                'message' => 'Unauthorized'
+            ];
+        }
         $data = json_decode(file_get_contents("php://input"), true);
 
         // هون لازم حط فاليديت للداتا
-
         if($data['type'] === 'appointment')
             $booking = new Appointment();
         else if($data['type'] === 'consultation')
@@ -27,7 +34,7 @@ class BookingController{
             ];
 
         $end_time = date('H:i:s', strtotime($data['start_time']) + $booking->getDuration() * 60);
-        $booking->user_id = $data['user_id'];
+        $booking->user_id = $id;
         $booking->date = $data['date'];
         $booking->start_time = $data['start_time'];
         $booking->end_time = $end_time;
@@ -42,18 +49,20 @@ class BookingController{
             'success' => true,
             'id' => $id
         ];
-
-
-        
+ 
     }
 
     public function cancel(int $booking_id)   {
-        //اختبار الصلاحية
-        $data = json_decode(file_get_contents("php://input"), true);
-
+        $id=$this->user()['id'];
+        if(!$this->user() || !$this->role($id , 'client')){
+            return [
+                'success' => false,
+                'message' => 'Unauthorized'
+            ];
+        }
         $repository = new BookingRepository($this->conn);
 
-        $canceled = $repository->delete( $booking_id, $data['user_id'] );
+        $canceled = $repository->delete( $booking_id, $id );
 
         if (!$canceled) {
             return [
