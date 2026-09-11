@@ -2,6 +2,7 @@
 namespace App\controllers;
 use mysqli;
 use App\repositories\UserRepository;
+use App\services\TokenService;
 class AuthController{
     private mysqli $conn;
     public function __construct(mysqli $conn){
@@ -35,11 +36,14 @@ class AuthController{
         // إنشاء الحساب
         $userId = $repository->create($name, $email, $phone, $password);
         //تسجيل الدخول بعد انشاء الحساب
+        $token = TokenService::createToken($this->conn, $userId);
+
         return [
             'status' => 201,
             'success' => true,
             'message' => 'Account created successfully',
-            'user_id' => $this->conn->insert_id
+            'user_id' => $this->conn->insert_id,
+            'Token' => $token
         ];
     }
 
@@ -75,13 +79,13 @@ class AuthController{
             ];
         }
         //انشاء التوكن
-
-
+        $token = TokenService::createToken($this->conn, $user['id']);
 
         return [
             'status' => 200,
             'success' => true,
-            'message' => 'Login successful'
+            'message' => 'Login successful',
+            'Token' => $token
         ];
     }
 }
