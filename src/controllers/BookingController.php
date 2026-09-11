@@ -86,4 +86,39 @@ class BookingController{
             'message' => 'Booking canceled successfully'
         ];
     }
+
+    public function setStatus($bookingId){
+        //التحقق من الصاحية والطبيب
+        $id=$this->user()['id'];
+        if(!$this->user() || !$this->role($id , 'admin')){
+            return [
+                'success' => false,
+                'message' => 'Unauthorized'
+            ];
+        }
+
+        $data = json_decode(file_get_contents("php://input"), true);
+        $status = $data['status'];
+        if(!in_array($status, [BookingStatus::CONFIRMED->value, BookingStatus::CANCELLED->value])){
+            return [
+                'success' => false,
+                'message' => 'Invalid status'
+            ];
+        }
+        $repo= new BookingRepository($this->conn);
+        if($repo->update($bookingId, $status)){
+            return [
+                'success' => true,
+                'message' => 'Booking status updated successfully'
+            ];
+        }else{
+            return [
+                'success' => false,
+                'message' => 'Booking not found or status is not pending'
+            ];
+        }  
+
+
+
+    }
 }

@@ -28,4 +28,14 @@ class BookingRepository{
 
         return $stmt->affected_rows > 0;
     }
+
+    public function update($bookingId, $status){       
+        $stmt = $this->conn->prepare("UPDATE bookings
+                                        SET status = ?
+                                        WHERE id = ?
+                                        AND status = 'pending'");
+        $stmt->bind_param("si", $status, $bookingId);
+        $stmt->execute();
+        return $stmt->affected_rows > 0;
+    }
 }
