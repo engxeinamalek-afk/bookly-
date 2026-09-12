@@ -3,6 +3,7 @@ namespace App\controllers;
 use mysqli;
 use App\Traits\HasAuthorization;
 use App\entities\Schedule;
+use App\exception\ScheduleException;
 use App\repositories\ScheduleRepository;
 class ScheduleController {
     use HasAuthorization;
@@ -33,16 +34,19 @@ class ScheduleController {
         $repo= new ScheduleRepository($this->conn);
         try{
             $id=$repo->create($schedule);
-        } catch (\Exception $e) {
             return [
+                'status' => 200,
+                'success' => true,
+                'id' => $id
+            ];
+        } catch (ScheduleException $e) {
+            return [
+                'status' => 400,
                 'success' => false,
-                'message' => 'Failed to create schedule'
+                'message' => $e->getMessage()
             ];
         }
-        return [
-            'success' => true,
-            'id' => $id
-        ];
+
     }
 
 }
