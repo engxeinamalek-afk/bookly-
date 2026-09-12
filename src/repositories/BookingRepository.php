@@ -12,12 +12,17 @@ class BookingRepository{
     }
 
     public function create($booking){
-        $stmt= $this->conn->prepare("INSERT INTO bookings (user_id, start_time, end_time, date, status, type)
-                                     VALUES (?, ?, ?, ?, ?, ?)");
-        $status = $booking->status->value;
-        $stmt->bind_param("isssss", $booking->user_id ,$booking->start_time ,$booking->end_time ,$booking->date ,$status, $booking->type);
-        $stmt->execute();
-        return $this->conn->insert_id;
+        try{
+            $stmt= $this->conn->prepare("INSERT INTO bookings (user_id, start_time, end_time, date, status, type)
+                                        VALUES (?, ?, ?, ?, ?, ?)");
+            $status = $booking->status->value;
+            $stmt->bind_param("isssss", $booking->user_id ,$booking->start_time ,$booking->end_time ,$booking->date ,$status, $booking->type);
+            $stmt->execute();
+            return $this->conn->insert_id;
+        }catch (mysqli_sql_exception $e) {
+            throw BookingException::databaseError();
+        }
+
     }
 
     public function delete(int $bookingId, int $userId){

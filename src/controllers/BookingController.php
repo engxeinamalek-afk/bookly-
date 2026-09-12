@@ -46,14 +46,20 @@ class BookingController{
         //هون لازم حط الاختبار اذا ممكن الحجز isAvailable?
         if(ConflictService::isAvailable($this->conn, $data['date'], $data['start_time'], $end_time)
             && ScheduleService::isAvailable($this->conn, $data['start_time'], $end_time, $data['date'])){
-            $repository = new BookingRepository($this->conn);
+            try{
+                $repository = new BookingRepository($this->conn);
+                $id = $repository->create($booking);
+                return [
+                    'success' => true,
+                    'id' => $id
+                ];
+            }catch(BookingException $e){
+                return [
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ];
+            }
 
-            $id = $repository->create($booking);
-
-            return [
-                'success' => true,
-                'id' => $id
-            ];
         }else{
             return [
                 'success' => false,
