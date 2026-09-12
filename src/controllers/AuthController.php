@@ -1,5 +1,7 @@
 <?php
 namespace App\controllers;
+
+use App\exception\AuthException;
 use mysqli;
 use App\repositories\UserRepository;
 use App\services\TokenService;
@@ -25,26 +27,28 @@ class AuthController{
 
         // التأكد من عدم وجود الإيميل
         $repository = new UserRepository($this->conn);
-        if ($repository->checkEmail($email)) {
+
+        try{
+            // إنشاء الحساب
+            $userId = $repository->create($name, $email, $phone, $password);
+            //تسجيل الدخول بعد انشاء الحساب
+            $token = TokenService::createToken($this->conn, $userId);
+
             return [
-                'status' => 409,
-                'success' => false,
-                'message' => 'Email already exists'
+                'status' => 201,
+                'success' => true,
+                'message' => 'Account created successfully',
+                'user_id' => $this->conn->insert_id,
+                'Token' => $token
+            ];
+        }catch(AuthException $e){
+            return [
+                'status' => 400,
+                'success' => true,
+                'message' => $e->getMessage()
             ];
         }
 
-        // إنشاء الحساب
-        $userId = $repository->create($name, $email, $phone, $password);
-        //تسجيل الدخول بعد انشاء الحساب
-        $token = TokenService::createToken($this->conn, $userId);
-
-        return [
-            'status' => 201,
-            'success' => true,
-            'message' => 'Account created successfully',
-            'user_id' => $this->conn->insert_id,
-            'Token' => $token
-        ];
     }
 
     public function login()
@@ -59,33 +63,29 @@ class AuthController{
                 'message' => 'Email and password are required'
             ];
         }
+    
+        try{
+                // البحث عن المستخدم
+            $repository = new UserRepository($this->conn);
+            $user = $repository->getUserByEmail($email);
+            // التأكد من كلمة المرور
+            if (!password_verify($password, $user['password']))// لانو مشفرة ما بقارن مباشرة
+                throw AuthException::invalidLoginInfo();
+            //انشاء التوكن
+            $token = TokenService::createToken($this->conn, $user['id']);
 
-        // البحث عن المستخدم
-        $repository = new UserRepository($this->conn);
-        $user = $repository->getUserByEmail($email);
-        if($user === null){
+            return [
+                'status' => 200,
+                'success' => true,
+                'message' => 'Login successful',
+                'Token' => $token
+            ];
+        }catch(AuthException $e){
             return [
                 'status' => 401,
                 'success' => false,
-                'message' => 'Invalid email or password'
+                'message' => $e->getMessage()
             ];
         }
-        // التأكد من كلمة المرور
-        if (!password_verify($password, $user['password'])) {// لانو مشفرة ما بقارن مباشرة
-            return [
-                'status' => 401,
-                'success' => false,
-                'message' => 'Invalid email or password'
-            ];
-        }
-        //انشاء التوكن
-        $token = TokenService::createToken($this->conn, $user['id']);
-
-        return [
-            'status' => 200,
-            'success' => true,
-            'message' => 'Login successful',
-            'Token' => $token
-        ];
     }
 }
