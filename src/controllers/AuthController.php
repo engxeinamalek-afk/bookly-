@@ -44,7 +44,7 @@ class AuthController{
         }catch(AuthException $e){
             return [
                 'status' => 400,
-                'success' => true,
+                'success' => false,
                 'message' => $e->getMessage()
             ];
         }

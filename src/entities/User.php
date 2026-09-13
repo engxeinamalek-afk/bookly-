@@ -1,5 +1,5 @@
 <?php
-namespace App\Entities;
+namespace App\entities;
 
 class User{
     public int $id;
@@ -11,6 +11,6 @@ class User{
         $this->id = $id;
         $this->name = $name;
         $this->email = $email;
-        $this->email = $phone;
+        $this->phone = $phone;
     } 
 }
