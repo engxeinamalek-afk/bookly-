@@ -55,8 +55,10 @@ if ($route) {
             ? $object->$methodName()
             : $object->$methodName($params['id']);
 
-        http_response_code($response['status']);
+        // http_response_code($response['status']);
+        $statusCode = $response['status'] ?? ($response['success'] ? 200 : 400);
 
+        http_response_code($statusCode);
         echo json_encode($response);
 
         exit();
