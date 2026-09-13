@@ -1,8 +1,7 @@
 <?php
 namespace App\entities;
+use App\entities\trait\HasSchedule;
 class Schedule{
     public $id;
-    public $start_time;
-    public $end_time;
-    public $date;
+    use HasSchedule;
 }
