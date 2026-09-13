@@ -16,16 +16,20 @@ class BookingController{
         $this->conn=$conn;
     }
     public function book(){
-        $id=$this->user()['id'];
-        if(!$this->user() || !$this->role($id , 'client')){
+        $user=$this->user();
+        if(!$user || !$this->role($user['id'] , 'client')){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
+        $id= $user['id'];
         $data = json_decode(file_get_contents("php://input"), true);
-
+        
         // هون لازم حط فاليديت للداتا
+        
+
+
         if($data['type'] === 'appointment')
             $booking = new Appointment();
         else if($data['type'] === 'consultation')
@@ -55,6 +59,7 @@ class BookingController{
                 ];
             }catch(BookingException $e){
                 return [
+                    'status' => 400,
                     'success' => false,
                     'message' => $e->getMessage()
                 ];
@@ -70,13 +75,14 @@ class BookingController{
     }
 
     public function cancel(int $booking_id)   {
-        $id=$this->user()['id'];
-        if(!$this->user() || !$this->role($id , 'client')){
+        $user=$this->user();
+        if(!$user || !$this->role($user['id'] , 'client')){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
+        $id= $user['id'];
         try{
             $repository = new BookingRepository($this->conn);
             $canceled = $repository->delete( $booking_id, $id );
@@ -96,13 +102,14 @@ class BookingController{
 
     public function setStatus($bookingId){
         //التحقق من الصاحية والطبيب
-        $id=$this->user()['id'];
-        if(!$this->user() || !$this->role($id , 'admin')){
+        $user=$this->user();
+        if(!$user || !$this->role($user['id'] , 'admin')){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
+        $id= $user['id'];
 
         $data = json_decode(file_get_contents("php://input"), true);
         $status = $data['status'];
@@ -130,13 +137,14 @@ class BookingController{
     }
 
     public function getApprovedBookings(){
-        $id=$this->user()['id'];
-        if(!$this->user() || !$this->role($id , 'client')){
+        $user=$this->user();
+        if(!$user || !$this->role($user['id'] , 'client')){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
+        $id= $user['id'];
         try{
             $repo= new BookingRepository($this->conn);
             $bookings = $repo->getBookingsByUserId($id);
@@ -162,13 +170,14 @@ class BookingController{
 
     }
     public function getRejectedBookings(){
-        $id=$this->user()['id'];
-        if(!$this->user() || !$this->role($id , 'client')){
+        $user=$this->user();
+        if(!$user || !$this->role($user['id'] , 'client')){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
+        $id= $user['id'];
         try{
             $repo= new BookingRepository($this->conn);
             $bookings = $repo->getBookingsByUserId($id);

@@ -15,13 +15,14 @@ class ScheduleController {
     
     public function store(){
         //الصلاحية
-        $id=$this->user()['id'];
-        if(!$this->user() || !$this->role($id , 'admin')){
+        $user=$this->user();
+        if(!$user || !$this->role($user['id'] , 'admin')){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
+        $id= $user['id'];
         //جلب البيانات 
         $data = json_decode(file_get_contents("php://input"), true);
         //هون لازم اعمل فاليديت للداتا
