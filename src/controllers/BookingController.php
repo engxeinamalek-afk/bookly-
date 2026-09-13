@@ -6,18 +6,17 @@ use App\entities\Appointment;
 use App\entities\Consultation;
 use App\entities\enums\BookingStatus;
 use App\exception\BookingException;
+use App\services\AuthService;
 use App\services\ConflictService;
 use App\services\ScheduleService;
-use App\Traits\HasAuthorization;
 class BookingController{
-    use HasAuthorization;
     private mysqli $conn;
     public function __construct(mysqli $conn){
         $this->conn=$conn;
     }
     public function book(){
-        $user=$this->user();
-        if(!$user || !$this->role($user['id'] , 'client')){
+        $user=AuthService::user($this->conn);
+        if(!$user || $user['role'] !== 'client'){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
@@ -80,8 +79,8 @@ class BookingController{
     }
 
     public function cancel(int $booking_id)   {
-        $user=$this->user();
-        if(!$user || !$this->role($user['id'] , 'client')){
+        $user=AuthService::user($this->conn);
+        if(!$user || $user['role'] !== 'client'){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
@@ -107,14 +106,13 @@ class BookingController{
 
     public function setStatus($bookingId){
         //التحقق من الصاحية والطبيب
-        $user=$this->user();
-        if(!$user || !$this->role($user['id'] , 'admin')){
+        $user=AuthService::user($this->conn);
+        if(!$user || $user['role'] !== 'admin'){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
             ];
         }
-        $id= $user['id'];
 
         $data = json_decode(file_get_contents("php://input"), true);
         $status = $data['status'];
@@ -142,8 +140,8 @@ class BookingController{
     }
 
     public function getApprovedBookings(){
-        $user=$this->user();
-        if(!$user || !$this->role($user['id'] , 'client')){
+        $user=AuthService::user($this->conn);
+        if(!$user || $user['role'] !== 'client'){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
@@ -175,8 +173,8 @@ class BookingController{
 
     }
     public function getRejectedBookings(){
-        $user=$this->user();
-        if(!$user || !$this->role($user['id'] , 'client')){
+        $user=AuthService::user($this->conn);
+        if(!$user || $user['role'] !== 'client'){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'

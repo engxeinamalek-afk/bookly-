@@ -1,12 +1,11 @@
 <?php
 namespace App\controllers;
 use mysqli;
-use App\Traits\HasAuthorization;
 use App\entities\Schedule;
 use App\exception\ScheduleException;
 use App\repositories\ScheduleRepository;
+use App\services\AuthService;
 class ScheduleController {
-    use HasAuthorization;
     private mysqli $conn;
 
     public function __construct(mysqli $conn) {
@@ -15,8 +14,8 @@ class ScheduleController {
     
     public function store(){
         //الصلاحية
-        $user=$this->user();
-        if(!$user || !$this->role($user['id'] , 'admin')){
+        $user=AuthService::user($this->conn);
+        if(!$user || $user['role'] !== 'admin'){
             return [
                 'success' => false,
                 'message' => 'Unauthorized'
