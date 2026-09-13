@@ -27,9 +27,13 @@ class BookingController{
         $data = json_decode(file_get_contents("php://input"), true);
         
         // هون لازم حط فاليديت للداتا
-        
-
-
+        if ( empty($data['type']) || empty($data['date']) || empty($data['start_time'])) {
+            return [
+                'status' => 400,
+                'success' => false,
+                'message' => 'Type, date and start time are required'
+            ];
+        }        
         if($data['type'] === 'appointment')
             $booking = new Appointment();
         else if($data['type'] === 'consultation')
@@ -41,6 +45,7 @@ class BookingController{
             ];
 
         $end_time = date('H:i:s', strtotime($data['start_time']) + $booking->getDuration() * 60);
+
         $booking->user_id = $id;
         $booking->date = $data['date'];
         $booking->start_time = $data['start_time'];

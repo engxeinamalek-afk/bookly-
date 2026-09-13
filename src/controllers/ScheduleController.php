@@ -26,6 +26,13 @@ class ScheduleController {
         //جلب البيانات 
         $data = json_decode(file_get_contents("php://input"), true);
         //هون لازم اعمل فاليديت للداتا
+        if ( empty($data['end_time']) || empty($data['date']) || empty($data['start_time'])) {
+            return [
+                'status' => 400,
+                'success' => false,
+                'message' => 'Type, date and start time are required'
+            ];
+        }
         //انشاء كائن
         $schedule = new Schedule();
         $schedule->start_time = $data['start_time'];
