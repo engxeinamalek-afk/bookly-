@@ -1,7 +1,8 @@
 <?php
 namespace App\entities\abstract;
 use App\entities\enums\BookingStatus;
-abstract class Booking{
+use App\entities\interface\Bookable;
+abstract class Booking implements Bookable{
     public $id;
     public $user_id;
     public $start_time;
@@ -9,6 +10,6 @@ abstract class Booking{
     public $date;
     public BookingStatus $status;
     public $type;
-    abstract public function getDuration();
-    abstract public function getType();
+    abstract public function getDuration(): int;
+    abstract public function getType(): string;
 }
